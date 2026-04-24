@@ -1,0 +1,7 @@
+/.pytest_cache
+/.venv
+/activate_env.bat
+/run.bat
+/run.ps1
+/tests
+/VENV_USAGE.md
