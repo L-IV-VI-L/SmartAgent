@@ -1,7 +1,7 @@
 """
 SmartAgent 服务层
 
-统一封装核心对话流程，便于后续复用到 CLI、HTTP API、WebSocket 等入口。
+统一封装核心对话流程。
 """
 
 from __future__ import annotations
