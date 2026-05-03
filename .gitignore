@@ -1,11 +1,12 @@
-/.pytest_cache
-/.venv
-**/__pycache__/
-*.pyc
-/logs/
-*.log
-/activate_env.bat
-/run.bat
-/run.ps1
-/tests
-/VENV_USAGE.md
+*
+!README.md
+!requirements.txt
+!src/
+!src/**
+
+# exclude generated python caches inside allowed tree
+src/**/__pycache__/
+src/**/*.pyc
+
+# local development artifacts
+!.gitignore
