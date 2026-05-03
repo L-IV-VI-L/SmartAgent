@@ -4,6 +4,8 @@ class Context:
         self.session_id = session_id
         self.raw_input = ""
         self.user_input = ""
+        self.response = ""
+        self.response_text = ""
         self.persona = {
             "nickname": "",
             "custom_persona": "",
@@ -11,8 +13,19 @@ class Context:
             "tone_weights": {},
         }
         self.emotion = {"label": "neutral", "score": 0.5}
-        self.memory = {"short_history": [], "compressed": "", "long_retrieved": []}
-        self.tools = {"results": [], "error": None}
+        self.memory = {
+            "short_history": [],
+            "compressed": "",
+            "long_retrieved": [],
+            "mainline_summary": "",
+            "stage_plan": [],
+            "anchor_turns": [],
+            "compressed_history": [],
+            "saved_long_memories": [],
+            "need_recall": False,
+            "need_expansion": False,
+        }
+        self.tools = {"decision": {}, "results": [], "error": None}
         self.text = ""
 
     @staticmethod
@@ -38,7 +51,7 @@ class Context:
         self.normalize_persona()
 
         lines = ["【助手基础设定】"]
-        lines.append(self.persona["custom_persona"] or "你是一个友好、专业的对话助手。")
+        lines.append(self.persona["custom_persona"] or "你是用户的朋友，一个温柔、体贴、善解人意的贴心朋友。")
 
         positive_personality = [(k, v) for k, v in self.persona["personality_weights"].items() if v > 0]
         if positive_personality:
@@ -53,6 +66,25 @@ class Context:
                 lines.append(f"- {k}")
 
         lines.append(f"\n【用户情绪】{self.emotion['label']}")
+        if self.memory.get("mainline_summary"):
+            lines.append("\n【对话主线摘要】")
+            lines.append(self.memory["mainline_summary"])
+        elif self.memory.get("compressed"):
+            lines.append("\n【对话主线摘要】")
+            lines.append(self.memory["compressed"])
+
+        if self.memory.get("anchor_turns"):
+            lines.append("\n【关键锚点】")
+            for msg in self.memory["anchor_turns"]:
+                lines.append(f"{msg.get('role', 'unknown')}：{msg.get('content', '')}")
+
+        if self.memory.get("stage_plan"):
+            lines.append("\n【阶段计划】")
+            for item in self.memory["stage_plan"]:
+                stage = item.get("stage", "unknown")
+                keywords = item.get("keywords", "")
+                lines.append(f"- {stage}: {keywords}")
+
         lines.append("\n【最近对话】")
         for msg in self.memory["short_history"]:
             lines.append(f"{msg.get('role', 'unknown')}：{msg.get('content', '')}")

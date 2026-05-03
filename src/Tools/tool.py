@@ -98,3 +98,58 @@ class ToolRegistry:
         if not tool:
             raise ValueError(f"未找到工具：{tool_name}")
         return await tool.run(**kwargs)
+
+    @classmethod
+    def execute_sync(cls, tool_name: str, **kwargs) -> str:
+        """
+        同步执行指定工具
+        
+        适用于无法使用 async/await 的场景。
+        
+        Args:
+            tool_name: 工具名称
+            **kwargs: 工具参数
+        
+        Returns:
+            str: 工具执行结果
+        
+        Raises:
+            ValueError: 工具不存在
+        """
+        tool = cls.get_tool(tool_name)
+        if not tool:
+            raise ValueError(f"未找到工具：{tool_name}")
+        
+        import asyncio
+        
+        try:
+            asyncio.get_running_loop()
+            has_running_loop = True
+        except RuntimeError:
+            has_running_loop = False
+
+        if has_running_loop:
+            import concurrent.futures
+            import threading
+            
+            result_container = []
+            error_container = []
+            
+            def _run_in_thread():
+                try:
+                    result = asyncio.run(tool.run(**kwargs))
+                    result_container.append(result)
+                except Exception as e:
+                    error_container.append(e)
+            
+            thread = threading.Thread(target=_run_in_thread)
+            thread.start()
+            thread.join(timeout=30)
+            
+            if error_container:
+                raise error_container[0]
+            if not result_container:
+                raise TimeoutError("工具执行超时")
+            return result_container[0]
+        else:
+            return asyncio.run(tool.run(**kwargs))

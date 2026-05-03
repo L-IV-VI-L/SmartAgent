@@ -16,6 +16,10 @@
 import time
 from typing import Optional, List, Dict, Any
 
+from ..utils.logger import get_logger
+
+logger = get_logger(__name__)
+
 
 class MemoryDecayConfig:
     """记忆衰减配置（集中管理所有参数）"""
@@ -150,7 +154,7 @@ class MemoryDecayModule:
                     if new_weight < MemoryDecayConfig.DELETE_WEIGHT:
                         milvus.client.delete(
                             collection_name=collection,
-                            filter=f"id == {mem_id}"
+                            filter=f'id == "{mem_id}"'
                         )
                         stats["deleted"] += 1
                         continue
@@ -172,10 +176,10 @@ class MemoryDecayModule:
                     stats["decayed"] += 1
                 
                 if stats["decayed"] > 0 or stats["deleted"] > 0:
-                    print(f"[记忆衰减] 完成: 衰减={stats['decayed']}, 失效={stats['deactivated']}, 删除={stats['deleted']}")
+                    logger.info("记忆衰减完成: 衰减=%d, 失效=%d, 删除=%d", stats['decayed'], stats['deactivated'], stats['deleted'])
         
         except Exception as e:
-            print(f"[记忆衰减] 执行失败: {e}")
+            logger.error("记忆衰减执行失败: %s", e)
         
         return stats
     
@@ -212,10 +216,10 @@ class MemoryDecayModule:
                     }
                 )
                 
-                print(f"[记忆强化] id={memory_id}, weight: {current_weight:.3f} -> {new_weight:.3f}")
+                logger.debug("记忆强化 id=%s, weight: %.3f -> %.3f", memory_id, current_weight, new_weight)
         
         except Exception as e:
-            print(f"[记忆强化] 更新失败: {e}")
+            logger.error("记忆强化更新失败: %s", e)
         
         return new_weight
     
@@ -245,15 +249,15 @@ class MemoryDecayModule:
                 for mem in results:
                     milvus.client.delete(
                         collection_name=collection,
-                        filter=f"id == {mem.get('id')}"
+                        filter=f'id == "{mem.get("id")}"'
                     )
                     stats["cleaned"] += 1
                 
                 if stats["cleaned"] > 0:
-                    print(f"[记忆清理] 已清理 {stats['cleaned']} 条过期记忆")
+                    logger.info("已清理 %d 条过期记忆", stats['cleaned'])
         
         except Exception as e:
-            print(f"[记忆清理] 执行失败: {e}")
+            logger.error("记忆清理执行失败: %s", e)
         
         return stats
 

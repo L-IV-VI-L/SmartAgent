@@ -12,13 +12,17 @@ from typing import Any, Dict, List, Optional
 
 from .db_config import (
     MONGO_COLLECTIONS,
-    MILVUS_COLLECTIONS,
     REDIS_EXPIRE,
     REDIS_MAX_HISTORY_COUNT,
+    REDIS_MAX_HISTORY_TURNS,
 )
 from .mongodb_client import MongoDBClient
 from .redis_client import RedisClient
 from .milvus_client import MilvusClient
+from ..InputProcess.memory_schema import LongMemoryRecord
+from ..utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -100,7 +104,7 @@ class ConversationRepository:
                 json.dumps({"session_id": session_id, "role": "assistant", "content": response, "timestamp": now, "turn_id": int(now * 1000) + 1}),
             )
             pipe.ltrim(key, -REDIS_MAX_HISTORY_COUNT, -1)
-            pipe.expire(key, REDIS_EXPIRE)
+            pipe.expire(key, REDIS_EXPIRE.get("short_memory", 259200))
             pipe.execute()
 
     def get_recent(self, user_id: str, limit: int = REDIS_MAX_HISTORY_COUNT) -> List[Dict[str, Any]]:
@@ -116,15 +120,87 @@ class ConversationRepository:
 
 
 class MemoryRepository:
-    """Milvus 长期记忆仓库。"""
+    """长期记忆仓库。
 
-    def append(self, user_id: str, content: str, embedding: List[float], doc_id: Optional[str] = None) -> None:
+    结构化接口会将完整文档写入 MongoDB，
+    同时将 embedding_text 和轻量元信息写入 Milvus 用于召回。
+    """
+
+    def append_structured(self, memory: LongMemoryRecord) -> None:
+        if memory.embedding is None:
+            raise ValueError("structured long memory requires embedding")
+
         now = time.time()
-        doc_id = doc_id or f"{user_id}_{int(now * 1000)}"
-        payload = [{"id": doc_id, "doc_id": doc_id, "text": content, "embedding": embedding}]
-        with MilvusClient() as milvus:
-            milvus.client.insert(collection_name=MILVUS_COLLECTIONS["long_memory"], data=payload)
+        if not memory.create_time:
+            memory.create_time = now
+        if not memory.update_time:
+            memory.update_time = now
+
+        doc = memory.to_mongo_document()
+        with MongoDBClient() as mongo:
+            collection = mongo.db[MONGO_COLLECTIONS["long_memory"]]
+            collection.update_one(
+                {"doc_id": memory.doc_id},
+                {"$set": doc},
+                upsert=True,
+            )
+
+        payload = [
+            {
+                "id": memory.doc_id,
+                "doc_id": memory.doc_id,
+                "user_id": memory.user_id,
+                "text": memory.embedding_text,
+                "content": memory.content,
+                "vector": memory.embedding,
+                "weight": memory.weight,
+                "create_time": memory.create_time,
+                "update_time": memory.update_time,
+                "metadata": {
+                    "memory_type": memory.memory_type,
+                    "tags": memory.tags,
+                    "importance": memory.importance,
+                    "confidence": memory.confidence,
+                    "status": memory.status,
+                    "source": memory.source,
+                    "session_id": memory.session_id,
+                },
+            }
+        ]
+        try:
+            with MilvusClient() as milvus:
+                milvus.insert(payload)
+        except Exception as e:
+            logger.warning(
+                "Milvus 写入失败（降级到仅 MongoDB 存储）: %s", e
+            )
+
+    def get_by_doc_ids(self, doc_ids: List[str]) -> List[Dict[str, Any]]:
+        if not doc_ids:
+            return []
+        with MongoDBClient() as mongo:
+            collection = mongo.db[MONGO_COLLECTIONS["long_memory"]]
+            docs = list(collection.find({"doc_id": {"$in": doc_ids}}))
+
+        order = {doc_id: index for index, doc_id in enumerate(doc_ids)}
+        for doc in docs:
+            doc.pop("_id", None)
+        return sorted(docs, key=lambda doc: order.get(doc.get("doc_id"), len(order)))
+
+    def update_access_time(self, doc_ids: List[str]) -> None:
+        if not doc_ids:
+            return
+        with MongoDBClient() as mongo:
+            collection = mongo.db[MONGO_COLLECTIONS["long_memory"]]
+            collection.update_many(
+                {"doc_id": {"$in": doc_ids}},
+                {"$set": {"last_access_time": time.time()}},
+            )
 
     def search(self, query: str, top_k: int = 3, filters: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
-        with MilvusClient() as milvus:
-            return milvus.search(query=query, top_k=top_k, filters=filters)
+        try:
+            with MilvusClient() as milvus:
+                return milvus.search(query=query, top_k=top_k, filters=filters)
+        except Exception as e:
+            logger.warning("Milvus 检索失败（降级返回空结果）: %s", e)
+            return []

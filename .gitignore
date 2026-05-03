@@ -1,5 +1,9 @@
 /.pytest_cache
 /.venv
+**/__pycache__/
+*.pyc
+/logs/
+*.log
 /activate_env.bat
 /run.bat
 /run.ps1

@@ -109,6 +109,56 @@ class AMapClient:
             "adcode": result.get("adcode", ""),
         }
     
+    def get_city_adcode(self, city_name: str) -> str:
+        """
+        获取城市 adcode
+        
+        Args:
+            city_name: 城市名称（如：北京、北京市）
+        
+        Returns:
+            str: 城市 adcode
+        
+        Raises:
+            Exception: 未找到城市
+        """
+        # 先尝试使用地理编码 API 获取 adcode
+        params = {
+            "address": city_name,
+            "city": city_name,
+        }
+        
+        url = f"{self.BASE_URL}/v3/geocode/geo"
+        data = self._request(url, params)
+        
+        geocodes = data.get("geocodes", [])
+        if geocodes:
+            adcode = geocodes[0].get("adcode", "")
+            if adcode and len(adcode) >= 2:
+                # 取前2位+4个0作为城市级adcode（如：110000）
+                return adcode[:2] + "0000"
+        
+        # 如果地理编码失败，尝试使用 POI 搜索
+        params = {
+            "keywords": city_name,
+            "types": "010000",
+            "page": 1,
+            "page_size": 5,
+        }
+        
+        url = f"{self.BASE_URL}/v3/place/text"
+        data = self._request(url, params)
+        
+        pois = data.get("pois", [])
+        for poi in pois:
+            cityname = poi.get("cityname", "")
+            adcode = poi.get("adcode", "")
+            if cityname and city_name.replace("市", "") in cityname.replace("市", ""):
+                if adcode and len(adcode) >= 6:
+                    return adcode[:6]
+        
+        raise Exception(f"未找到城市 adcode：{city_name}")
+    
     def reverse_geocode(
         self,
         longitude: float,
@@ -169,7 +219,8 @@ class AMapClient:
         天气查询：查询目标区域当前/未来的天气情况
         
         Args:
-            city: 城市 adcode 或城市名称（如：110101 或 北京）
+            city: 城市 adcode 或城市名称（如：110000 或 北京）
+                如果传入城市名，将自动转换为 adcode。
             extensions: 气象类型
                 - "base": 返回实况天气（默认）
                 - "all": 返回预报天气
@@ -215,6 +266,14 @@ class AMapClient:
             "city": city,
             "extensions": extensions,
         }
+        
+        # 如果 city 不是纯数字（不是 adcode），自动转换为 adcode
+        if not city.isdigit():
+            try:
+                city_adcode = self.get_city_adcode(city)
+                params["city"] = city_adcode
+            except Exception as e:
+                raise Exception(f"无法解析城市名称 '{city}'：{e}")
         
         url = f"{self.BASE_URL}/v3/weather/weatherInfo"
         data = self._request(url, params)

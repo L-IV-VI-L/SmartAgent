@@ -49,6 +49,9 @@ MONGO_COLLECTIONS = {
 
     # 【表2】用户画像：用户是什么样的人
     "user_profile": "user_profile",
+
+    # 【表3】结构化长期记忆完整文档
+    "long_memory": "long_memory_docs",
 }
 
 # ==========================================
@@ -104,9 +107,14 @@ REDIS_SHORT_HISTORY = {
     "turn_id": int,         # 轮次
 }
 
-# 保留最近 15 轮
-REDIS_MAX_HISTORY_COUNT = 15
-REDIS_EXPIRE = 86400 * 3  # 3天过期
+# 保留最近 15 轮对话（注意：每轮包含 user + assistant 两条消息）
+REDIS_MAX_HISTORY_TURNS = 15
+REDIS_MAX_HISTORY_COUNT = REDIS_MAX_HISTORY_TURNS * 2
+REDIS_EXPIRE = {
+    "persona_step": 86400,      # 人格步长数据 1 天过期
+    "tone_step": 86400,         # 语气步长数据 1 天过期
+    "short_memory": 86400 * 3,  # 短期记忆 3 天过期
+}
 
 # ----------------------
 # Milvus 集合
@@ -115,8 +123,8 @@ MILVUS_COLLECTIONS = {
     "long_memory": "long_term_memory"
 }
 
-# 向量维度（根据你用的模型）
-MILVUS_VECTOR_DIM = 1536
+# 向量维度（DashScope text-embedding-v3 模型输出维度）
+MILVUS_VECTOR_DIM = 1024
 
 # 长时记忆固定字段
 MILVUS_LONG_MEMORY_SCHEMA = {

@@ -45,10 +45,11 @@ class BaseLLMClient:
         
         self.model = kwargs.get("model", "qwen-max")
         self.temperature = kwargs.get("temperature", 0.7)
-        self.max_tokens = kwargs.get("max_tokens", 120000)
+        self.max_tokens = kwargs.get("max_tokens", 2000)
         self.top_p = kwargs.get("top_p", 0.9)
         
         api_key = kwargs.get("api_key") or os.getenv("DASHSCOPE_API_KEY")
+        base_url = kwargs.get("base_url", "https://dashscope.aliyuncs.com/compatible-mode/v1")
         
         self.llm = None
         if ChatOpenAI is not None:
@@ -57,7 +58,7 @@ class BaseLLMClient:
                 temperature=self.temperature,
                 max_tokens=self.max_tokens,
                 api_key=api_key,
-                base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
+                base_url=base_url,
             )
     
     def chat(

@@ -1,13 +1,22 @@
 """
-InputProcess 模块
+InputProcess 模块。
 
-输入处理模块，负责：
-- 判断用户输入是否需要扩写
-- 召回短期记忆（Redis）或长期记忆（Milvus）
-- 对问题进行扩写
-- 将扩写结果和召回记忆写入 Context
+该包保留输入处理相关的基础组件；完整对话工作流已迁移到 ``src.agents`` 中，
+由 ``ContextBuildAgent``、``EmotionAndStateSeedAgent`` 和 ``MainlineMemoryAgent`` 组合调用。
 """
 
-from .InputLMM import InputProcessModule, process_input
+from .common import InputProcessCommon
+from .emotion_analyzer import EmotionAnalyzer
+from .mainline_memory import MainlineMemoryUpdater
+from .memory_compressor import MemoryCompressor
+from .memory_retriever import MemoryRetriever
+from .query_expander import QueryExpander
 
-__all__ = ["InputProcessModule", "process_input"]
+__all__ = [
+    "InputProcessCommon",
+    "EmotionAnalyzer",
+    "MainlineMemoryUpdater",
+    "MemoryCompressor",
+    "MemoryRetriever",
+    "QueryExpander",
+]
