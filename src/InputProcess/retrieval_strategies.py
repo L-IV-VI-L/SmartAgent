@@ -50,6 +50,13 @@ STANDARD_STRATEGY = RetrievalStrategy(
 )
 """标准对话策略：全类型记忆，top_k=3。"""
 
+SIMPLE_STRATEGY = RetrievalStrategy(
+    memory_types=None,
+    top_k=2,
+    enable_expansion=False,
+)
+"""简洁对话策略：少量记忆，不扩写，适用于简单问候。"""
+
 TASK_STRATEGY = RetrievalStrategy(
     memory_types=["plan", "fact"],
     top_k=5,

@@ -18,6 +18,7 @@ from src.Tools.BaseLLM import BaseLLMClient
 from src.InputProcess.retrieval_strategies import (
     RetrievalStrategy,
     STANDARD_STRATEGY,
+    SIMPLE_STRATEGY,
     TASK_STRATEGY,
     EMOTION_STRATEGY,
     KNOWLEDGE_STRATEGY,
@@ -28,6 +29,7 @@ from src.prompts import CLASSIFIER_SYSTEM_PROMPT
 logger = logging.getLogger(__name__)
 
 STRATEGY_MAP = {
+    "simple": SIMPLE_STRATEGY,
     "standard": STANDARD_STRATEGY,
     "task": TASK_STRATEGY,
     "emotion": EMOTION_STRATEGY,

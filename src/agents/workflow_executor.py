@@ -26,6 +26,7 @@ from src.agents.emotion_state_agent import EmotionStateAgent
 from src.InputProcess.retrieval_strategies import (
     RetrievalStrategy,
     STANDARD_STRATEGY,
+    SIMPLE_STRATEGY,
     TASK_STRATEGY,
     EMOTION_STRATEGY,
     KNOWLEDGE_STRATEGY,
@@ -34,6 +35,10 @@ from src.InputProcess.retrieval_strategies import (
 logger = logging.getLogger(__name__)
 
 WORKFLOW_CONFIGS = {
+    "simple": {
+        "strategy": SIMPLE_STRATEGY,
+        "agents": ["context_build", "emotion_state", "response"],
+    },
     "standard": {
         "strategy": STANDARD_STRATEGY,
         "agents": ["context_build", "emotion_state", "tool_plan", "tool_execute", "response"],
@@ -47,8 +52,6 @@ WORKFLOW_CONFIGS = {
         "agents": [
             "context_build",
             "emotion_state",
-            "tool_plan",
-            "tool_execute",
             "response",
             "mainline_memory",
         ],
@@ -176,7 +179,9 @@ class WorkflowExecutor:
 
     def _identify_workflow(self, strategy: RetrievalStrategy) -> str:
         """根据检索策略识别对应的工作流名称。"""
-        if strategy is STANDARD_STRATEGY:
+        if strategy is SIMPLE_STRATEGY:
+            return "simple"
+        elif strategy is STANDARD_STRATEGY:
             return "standard"
         elif strategy is TASK_STRATEGY:
             return "task"
