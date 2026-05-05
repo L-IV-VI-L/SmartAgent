@@ -126,7 +126,7 @@ class WorkflowExecutor:
             workflow_name = self._identify_workflow(strategy)
 
             logger.info("开始执行工作流: %s", workflow_name)
-            config = WORKFLOW_CONFIGS.get(workflow_name, WORKFLOW_CONFIGS["standard"])
+            config = WORKFLOW_CONFIGS.get(workflow_name, WORKFLOW_CONFIGS["base"])
 
             for agent_name in config["agents"]:
                 try:

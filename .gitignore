@@ -1,0 +1,12 @@
+*
+!README.md
+!requirements.txt
+!src/
+!src/**
+
+# exclude generated python caches inside allowed tree
+src/**/__pycache__/
+src/**/*.pyc
+
+# local development artifacts
+!.gitignore
