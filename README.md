@@ -23,7 +23,7 @@
 
 | 用途 | 技术 |
 |------|------|
-| 大模型 | DeepSeek · DashScope |
+| 大模型服务选取 | DeepSeek · 阿里云百炼平台 |
 | 短期记忆 | Redis |
 | 长期记忆 | MongoDB · Milvus 向量检索 |
 | API 框架 | FastAPI |
