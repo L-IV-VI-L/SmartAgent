@@ -164,10 +164,9 @@ class MemoryDecayModule:
                     if not is_active:
                         stats["deactivated"] += 1
                     
-                    milvus.client.update(
-                        collection_name=collection,
+                    milvus.update_memory(
+                        memory_id=mem_id,
                         data={
-                            "id": mem_id,
                             "weight": new_weight,
                             "active": is_active,
                             "update_time": update_time
@@ -206,10 +205,9 @@ class MemoryDecayModule:
             from ..database.milvus_client import MilvusClient
             
             with MilvusClient() as milvus:
-                milvus.client.update(
-                    collection_name=collection,
+                milvus.update_memory(
+                    memory_id=memory_id,
                     data={
-                        "id": memory_id,
                         "weight": new_weight,
                         "active": True,
                         "update_time": update_time

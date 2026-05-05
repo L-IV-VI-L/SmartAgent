@@ -15,6 +15,11 @@ except Exception:  # pragma: no cover - fallback for incompatible runtime/deps
     _MilvusClient = None
     DataType = FieldSchema = CollectionSchema = None
 
+try:
+    from pymilvus.milvus_client import IndexParams  # type: ignore
+except Exception:
+    IndexParams = None
+
 from .db_config import MILVUS_CONFIG, MILVUS_COLLECTIONS, MILVUS_VECTOR_DIM, MILVUS_INDEX_PARAMS
 from ..utils.logger import get_logger
 
@@ -66,15 +71,34 @@ class MilvusVectorStore:
                 ]
                 schema = CollectionSchema(fields, "Long term memory collection")
                 self.client.create_collection(collection_name=self.collection_name, schema=schema)
-                index_params = {
-                    "metric_type": MILVUS_INDEX_PARAMS["metric_type"],
-                    "index_type": MILVUS_INDEX_PARAMS["index_type"],
-                    "params": {},
-                }
-                self.client.create_index(collection_name=self.collection_name, field_name="vector", index_params=index_params)
+                if IndexParams is not None:
+                    index_params = IndexParams()
+                    index_params.add_index(
+                        field_name="vector",
+                        index_name="vector_idx",
+                        index_type=MILVUS_INDEX_PARAMS["index_type"],
+                        metric_type=MILVUS_INDEX_PARAMS["metric_type"],
+                        params={},
+                    )
+                    self.client.create_index(
+                        collection_name=self.collection_name,
+                        index_params=index_params,
+                    )
+                else:
+                    index_params = {
+                        "metric_type": MILVUS_INDEX_PARAMS["metric_type"],
+                        "index_type": MILVUS_INDEX_PARAMS["index_type"],
+                        "params": {},
+                    }
+                    self.client.create_index(
+                        collection_name=self.collection_name,
+                        field_name="vector",
+                        index_params=index_params,
+                    )
                 logger.info("创建集合 %s 成功", self.collection_name)
             else:
                 logger.info("集合 %s 已存在", self.collection_name)
+            self.client.load_collection(self.collection_name)
             self._collection_created = True
         except Exception as e:
             logger.error("创建集合失败: %s", e)
@@ -163,15 +187,14 @@ class MilvusVectorStore:
                 anns_field="vector",
                 limit=top_k,
                 filter=filter_expr,
-                output_fields=["id", "doc_id", "user_id", "text", "content", "weight", "metadata"],
+                output_fields=["id", "doc_id", "user_id", "text", "content", "weight"],
             )
 
             results = []
             for hit_list in raw_results or []:
                 for hit in hit_list:
-                    metadata = hit.get("entity", {}).get("metadata") or {}
-                    if not isinstance(metadata, dict):
-                        metadata = {}
+                    entity = hit.get("entity", {})
+                    metadata = {}
                     metadata.update({
                         "id": hit.get("id"),
                         "doc_id": hit.get("entity", {}).get("doc_id"),
@@ -355,14 +378,18 @@ class MilvusClient:
         )
 
     def update_memory(self, memory_id: str, data: Dict[str, Any]) -> None:
-        """更新指定记忆的字段。"""
+        """更新指定记忆的字段（通过 upsert 实现）。"""
         if self.client is None:
             return
-        data["id"] = memory_id
-        self.client.update(
-            collection_name=self.collection_name,
-            data=data,
-        )
+        payload = dict(data)
+        payload["id"] = memory_id
+        try:
+            self.client.upsert(
+                collection_name=self.collection_name,
+                data=payload,
+            )
+        except Exception as e:
+            logger.warning("记忆更新失败（upsert）: %s", e)
 
     def delete_memory(self, memory_id: str) -> None:
         """删除指定记忆。"""
