@@ -17,8 +17,7 @@ from typing import Optional
 from src.Tools.BaseLLM import BaseLLMClient
 from src.InputProcess.retrieval_strategies import (
     RetrievalStrategy,
-    STANDARD_STRATEGY,
-    SIMPLE_STRATEGY,
+    BASE_STRATEGY,
     TASK_STRATEGY,
     EMOTION_STRATEGY,
     KNOWLEDGE_STRATEGY,
@@ -29,8 +28,7 @@ from src.prompts import CLASSIFIER_SYSTEM_PROMPT
 logger = logging.getLogger(__name__)
 
 STRATEGY_MAP = {
-    "simple": SIMPLE_STRATEGY,
-    "standard": STANDARD_STRATEGY,
+    "base": BASE_STRATEGY,
     "task": TASK_STRATEGY,
     "emotion": EMOTION_STRATEGY,
     "knowledge": KNOWLEDGE_STRATEGY,
@@ -75,7 +73,7 @@ class SceneClassifier:
             user_input: 用户的输入文本。
 
         Returns:
-            对应的 RetrievalStrategy，失败时返回默认的 STANDARD_STRATEGY。
+            对应的 RetrievalStrategy，失败时返回默认的 BASE_STRATEGY。
         """
         try:
             response = self.llm_client.chat_with_prompt(
@@ -85,19 +83,19 @@ class SceneClassifier:
 
             if not response:
                 logger.warning("LLM 返回空响应，使用默认策略")
-                return STANDARD_STRATEGY
+                return BASE_STRATEGY
 
             result = extract_json_from_text(response)
             if result is None:
                 logger.warning("JSON 解析失败，使用默认策略。原始响应: %s", response)
-                return STANDARD_STRATEGY
+                return BASE_STRATEGY
 
             strategy_name = result.get("strategy", "").lower()
             strategy = STRATEGY_MAP.get(strategy_name)
 
             if strategy is None:
                 logger.warning("未知策略: %s，使用默认策略", strategy_name)
-                return STANDARD_STRATEGY
+                return BASE_STRATEGY
 
             logger.info(
                 "场景分类完成: strategy=%s, reason=%s",
@@ -108,4 +106,4 @@ class SceneClassifier:
 
         except Exception as e:
             logger.warning("场景分类失败，使用默认策略: %s", e)
-            return STANDARD_STRATEGY
+            return BASE_STRATEGY

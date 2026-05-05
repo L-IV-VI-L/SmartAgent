@@ -43,19 +43,12 @@ class RetrievalStrategy:
 
 # ========== 预定义策略 ==========
 
-STANDARD_STRATEGY = RetrievalStrategy(
-    memory_types=None,
-    top_k=3,
-    enable_expansion=True,
-)
-"""标准对话策略：全类型记忆，top_k=3。"""
-
-SIMPLE_STRATEGY = RetrievalStrategy(
+BASE_STRATEGY = RetrievalStrategy(
     memory_types=None,
     top_k=2,
     enable_expansion=False,
 )
-"""简洁对话策略：少量记忆，不扩写，适用于简单问候。"""
+"""基础对话策略：少量记忆，不扩写，适用于日常对话默认路径。"""
 
 TASK_STRATEGY = RetrievalStrategy(
     memory_types=["plan", "fact"],
