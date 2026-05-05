@@ -20,7 +20,6 @@ from src.InputProcess.retrieval_strategies import (
     BASE_STRATEGY,
     TASK_STRATEGY,
     EMOTION_STRATEGY,
-    KNOWLEDGE_STRATEGY,
 )
 from src.utils.json_utils import extract_json_from_text
 from src.prompts import CLASSIFIER_SYSTEM_PROMPT
@@ -31,7 +30,6 @@ STRATEGY_MAP = {
     "base": BASE_STRATEGY,
     "task": TASK_STRATEGY,
     "emotion": EMOTION_STRATEGY,
-    "knowledge": KNOWLEDGE_STRATEGY,
 }
 
 

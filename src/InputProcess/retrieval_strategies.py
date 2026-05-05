@@ -63,10 +63,3 @@ EMOTION_STRATEGY = RetrievalStrategy(
     enable_expansion=True,
 )
 """情感陪伴策略：情绪和关系型记忆，top_k=5。"""
-
-KNOWLEDGE_STRATEGY = RetrievalStrategy(
-    memory_types=["fact"],
-    top_k=3,
-    enable_expansion=False,
-)
-"""知识问答策略：事实型记忆，top_k=3，不扩写。"""

@@ -28,7 +28,6 @@ from src.InputProcess.retrieval_strategies import (
     BASE_STRATEGY,
     TASK_STRATEGY,
     EMOTION_STRATEGY,
-    KNOWLEDGE_STRATEGY,
 )
 
 logger = logging.getLogger(__name__)
@@ -49,17 +48,6 @@ WORKFLOW_CONFIGS = {
             "emotion_state",
             "response",
             "mainline_memory",
-        ],
-    },
-    "knowledge": {
-        "strategy": KNOWLEDGE_STRATEGY,
-        "agents": [
-            "context_build",
-            "emotion_state",
-            "tool_plan",
-            "tool_execute",
-            "response",
-            "long_memory_extract",
         ],
     },
 }
@@ -180,8 +168,6 @@ class WorkflowExecutor:
             return "task"
         elif strategy is EMOTION_STRATEGY:
             return "emotion"
-        elif strategy is KNOWLEDGE_STRATEGY:
-            return "knowledge"
         else:
             logger.warning("未识别的检索策略，使用基础工作流")
             return "base"
