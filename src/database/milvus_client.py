@@ -31,15 +31,15 @@ def _build_field_schemas():
     return [
         FieldSchema(name="id", dtype=DataType.VARCHAR, is_primary=True, max_length=128),
         FieldSchema(name="doc_id", dtype=DataType.VARCHAR, max_length=128, default_value=""),
-        FieldSchema(name="user_id", dtype=DataType.VARCHAR, max_length=256),
-        FieldSchema(name="text", dtype=DataType.VARCHAR, max_length=20000),
-        FieldSchema(name="content", dtype=DataType.VARCHAR, max_length=20000),
+        FieldSchema(name="user_id", dtype=DataType.VARCHAR, max_length=256, default_value=""),
+        FieldSchema(name="text", dtype=DataType.VARCHAR, max_length=20000, default_value=""),
+        FieldSchema(name="content", dtype=DataType.VARCHAR, max_length=20000, default_value=""),
         FieldSchema(name="vector", dtype=DataType.FLOAT_VECTOR, dim=MILVUS_VECTOR_DIM),
-        FieldSchema(name="weight", dtype=DataType.DOUBLE, default=0.0),
-        FieldSchema(name="create_time", dtype=DataType.DOUBLE),
-        FieldSchema(name="update_time", dtype=DataType.DOUBLE, default=0.0),
-        FieldSchema(name="active", dtype=DataType.BOOL, default=True),
-        FieldSchema(name="metadata", dtype=DataType.JSON),
+        FieldSchema(name="weight", dtype=DataType.DOUBLE, default_value=0.0),
+        FieldSchema(name="create_time", dtype=DataType.DOUBLE, default_value=0.0),
+        FieldSchema(name="update_time", dtype=DataType.DOUBLE, default_value=0.0),
+        FieldSchema(name="active", dtype=DataType.BOOL, default_value=True),
+        FieldSchema(name="metadata", dtype=DataType.JSON, default_value="{}"),
     ]
 
 
