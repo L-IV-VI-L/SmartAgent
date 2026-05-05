@@ -1,6 +1,14 @@
 from __future__ import annotations
 
-"""场景分类器 - 根据用户输入自动选择记忆检索策略。"""
+"""场景分类器 - 根据用户输入自动选择记忆检索策略。
+
+职责：
+1. 接收用户输入
+2. 根据输入内容判断应使用的记忆检索策略
+3. 将判断结果写入 Context 中
+
+"""
+
 
 import logging
 import os

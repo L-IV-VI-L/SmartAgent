@@ -1,6 +1,9 @@
 from __future__ import annotations
 
-"""状态处理相关 Agent。"""
+"""状态处理相关 Agent。
+负责处理用户状态，包括人格、语气、情绪联动带来的状态更新。
+"""
+
 
 
 import json

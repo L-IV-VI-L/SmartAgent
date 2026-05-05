@@ -1,6 +1,15 @@
 from __future__ import annotations
 
-"""工作流执行器 - 统一管理四大工作流的执行流程。"""
+"""工作流执行器 - 统一管理四大工作流的执行流程。
+
+负责根据场景分类器返回的策略自动构建并执行对应的 Agent 序列。
+1. 接收用户输入
+2. 调用场景分类器判断应使用的记忆检索策略
+3. 调用输入处理 Agent 构建上下文
+4. 调用工具处理 Agent 计划工具调用
+5. 调用回复生成 Agent 生成回复
+6. 调用记忆处理 Agent 处理长期记忆。
+"""
 
 import logging
 from typing import Callable, Dict, List, Optional

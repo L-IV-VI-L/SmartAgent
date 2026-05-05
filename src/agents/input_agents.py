@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-"""输入处理相关 Agent。"""
+"""输入处理相关 Agent。
+负责处理用户输入，包括召回判断、记忆召回和 query 扩写。
+"""
 
 from typing import Any, Dict, List, Optional
 

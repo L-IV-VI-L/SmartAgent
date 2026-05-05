@@ -1,6 +1,14 @@
 from __future__ import annotations
 
-"""工具处理相关 Agent。"""
+"""工具处理相关 Agent。
+负责处理用户输入中的工具调用决策。
+
+职责：
+1. 接收用户输入
+2. 根据输入内容判断是否需要调用工具
+3. 如果需要，调用指定工具并获取结果
+4. 将工具调用结果写入 Context 中
+"""
 
 from typing import Any, Dict, Optional
 import asyncio
