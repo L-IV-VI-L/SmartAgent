@@ -10,6 +10,7 @@ Agents 模块是 SmartAgent 系统的核心，包含所有 Agent 实现以及工
 src/agents/
 ├── base.py                  # Agent 基类
 ├── config.py                # Agent 配置常量
+├── emotion_state_agent.py   # 情绪分析与人格调整 Agent
 ├── input_agents.py          # 输入处理 Agent
 ├── state_agents.py          # 状态管理 Agent
 ├── tool_agents.py           # 工具调用 Agent
@@ -41,7 +42,21 @@ src/agents/
 
 ---
 
-## 2. 输入处理 Agent (input_agents.py)
+## 2. 情绪分析 Agent (emotion_state_agent.py)
+
+### EmotionAndStateAgent
+
+**功能**: 分析用户情绪、存储短期状态种子、调整人格与语气。
+
+**执行流程**:
+1. 调用 LLM 分析用户情绪
+2. 将情绪数据写入 Context
+3. 根据情绪调整人格和语气步长
+4. 写入 Redis 作为暂存，达到阈值时更新 MongoDB
+
+---
+
+## 3. 输入处理 Agent (input_agents.py)
 
 ### ContextBuildAgent
 
@@ -88,7 +103,7 @@ src/agents/
 
 ---
 
-## 3. 状态管理 Agent (state_agents.py)
+## 4. 状态管理 Agent (state_agents.py)
 
 ### StateAdjustAgent
 
@@ -103,7 +118,7 @@ src/agents/
 
 ---
 
-## 4. 工具调用 Agent (tool_agents.py)
+## 5. 工具调用 Agent (tool_agents.py)
 
 ### ToolPlanAgent
 
@@ -136,7 +151,7 @@ src/agents/
 
 ---
 
-## 5. 回复生成 Agent (response_agents.py)
+## 6. 回复生成 Agent (response_agents.py)
 
 ### ResponseAgent
 
@@ -152,7 +167,7 @@ src/agents/
 
 ---
 
-## 6. 记忆处理 Agent (memory_agents.py)
+## 7. 记忆处理 Agent (memory_agents.py)
 
 ### LongMemoryExtractAgent
 
@@ -166,7 +181,7 @@ src/agents/
 
 ---
 
-## 7. 场景分类器 (scene_classifier.py)
+## 8. 场景分类器 (scene_classifier.py)
 
 **功能**: 根据用户输入自动判断场景类型，返回对应的检索策略。
 
@@ -188,7 +203,7 @@ src/agents/
 
 ---
 
-## 8. 工作流执行器 (workflow_executor.py)
+## 9. 工作流执行器 (workflow_executor.py)
 
 **功能**: 统一管理四大工作流的执行流程。
 
@@ -210,7 +225,7 @@ src/agents/
 
 ---
 
-## 9. 工作流依赖配置 (workflow_dependencies.py)
+## 10. 工作流依赖配置 (workflow_dependencies.py)
 
 **功能**: 统一管理并初始化工作流所需的所有依赖组件。
 
@@ -246,7 +261,7 @@ SmartAgentAPI (main.py)
   │     │
   │     └── Agent 序列
   │           ├── ContextBuildAgent
-  │           ├── EmotionAndStateSeedAgent
+  │           ├── EmotionAndStateSeedAgent / EmotionAndStateAgent
   │           ├── StateAdjustAgent
   │           ├── ToolPlanAgent
   │           ├── ToolExecuteAgent → ToolRegistry

@@ -66,6 +66,7 @@ src/database/
 | `upsert(doc_id, vector, text, metadata, ...)` | 插入或更新向量记录 |
 | `search(query_vector, top_k, filter_expr)` | 向量相似度搜索 |
 | `get_by_id(doc_id)` | 根据 doc_id 获取记录 |
+| `update_memory(memory_id, data)` | 更新指定记忆的字段（通过 upsert 实现） |
 
 ### 索引配置
 
