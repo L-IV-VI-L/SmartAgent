@@ -18,8 +18,7 @@ from src.InputProcess.mainline_memory import MainlineMemoryUpdater
 from src.InputProcess.memory_compressor import MemoryCompressor
 from src.InputProcess.retrieval_strategies import RetrievalStrategy
 from src.database.repositories import ConversationRepository, MemoryRepository
-from src.prompts.agent_prompts import TASK_JUDGE_PROMPT, TASK_CONTEXT_BUILD_PROMPT
-from src.prompts.memory_prompts import MEMORY_COMPRESS_PROMPT
+from src.prompts import TASK_JUDGE_PROMPT, TASK_CONTEXT_BUILD_PROMPT, MEMORY_COMPRESS_PROMPT, EMOTION_STATE_SYSTEM_PROMPT
 from src.utils.json_utils import parse_json_response    
 from src.utils.logger import get_logger
 
@@ -130,8 +129,6 @@ class WorkflowDependencies:
     def emotion_analyzer(self) -> EmotionAnalyzer:
         """延迟初始化 EmotionAnalyzer。"""
         if self._emotion_analyzer is None:
-            from src.prompts.scene_prompts import EMOTION_STATE_SYSTEM_PROMPT
-
             self._emotion_analyzer = EmotionAnalyzer(
                 call_llm_json=lambda user_prompt, system_prompt: parse_json_response(
                     self.main_llm_client.chat_with_prompt(prompt=user_prompt, system_message=system_prompt)
@@ -152,8 +149,6 @@ class WorkflowDependencies:
     def memory_compressor(self) -> MemoryCompressor:
         """延迟初始化 MemoryCompressor。"""
         if self._memory_compressor is None:
-            from src.prompts.memory_prompts import MEMORY_COMPRESS_PROMPT
-
             self._memory_compressor = MemoryCompressor(
                 llm_client=self.main_llm_client,
                 count_tokens=self.main_llm_client.count_tokens,

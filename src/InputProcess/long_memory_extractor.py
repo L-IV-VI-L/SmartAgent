@@ -7,7 +7,7 @@ import time
 from typing import Any, Dict, List, Optional
 
 from ..core.context import Context
-from ..prompts.memory_prompts import LONG_MEMORY_EXTRACT_PROMPT
+from ..prompts import LONG_MEMORY_EXTRACT_PROMPT
 from ..Tools.BaseLLM import BaseLLMClient
 from ..utils.json_utils import extract_json_from_text
 from .memory_schema import (
