@@ -392,6 +392,7 @@ class MilvusClient:
         payload.setdefault("create_time", now)
         payload.setdefault("update_time", now)
         payload.setdefault("active", True)
+        payload.setdefault("metadata", {})
         try:
             self.client.upsert(
                 collection_name=self.collection_name,
