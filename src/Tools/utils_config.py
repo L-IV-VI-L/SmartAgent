@@ -1,3 +1,9 @@
+"""
+通用工具配置模块
+
+集中管理时间格式、版本号等通用配置参数。
+"""
+
 # 通用工具配置
 COMMON_CONFIG = {
     "DEFAULT_DATETIME_FORMAT": "%Y-%m-%d %H:%M:%S",

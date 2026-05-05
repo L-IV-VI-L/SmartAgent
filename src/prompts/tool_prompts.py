@@ -1,3 +1,9 @@
+"""
+工具相关 Prompt 模板模块
+
+提供工具调用决策的系统提示词模板。
+"""
+
 from __future__ import annotations
 
 TOOL_DECISION_PROMPT = """你是一个工具调用决策助手。根据用户输入和可用工具列表，判断是否需要调用工具来辅助回答。

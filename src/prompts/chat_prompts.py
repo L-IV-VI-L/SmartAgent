@@ -1,3 +1,9 @@
+"""
+聊天相关 Prompt 模板模块
+
+提供情绪分析的系统提示词模板。
+"""
+
 from __future__ import annotations
 
 CHAT_EMOTION_PROMPT = """你是一个情绪分析助手。分析用户输入的情绪状态。

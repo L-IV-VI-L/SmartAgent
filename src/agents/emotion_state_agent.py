@@ -31,24 +31,9 @@ from .config import (
     REDIS_PERSONA_STEP_KEY,
     REDIS_TONE_STEP_KEY,
 )
+from src.prompts import EMOTION_STATE_SYSTEM_PROMPT
 
 logger = get_logger(__name__)
-
-EMOTION_STATE_SYSTEM_PROMPT = """你是一个情绪分析助手。
-
-你的任务是分析用户输入中的情绪状态，并输出情绪标签和分数。
-
-情绪标签包括：positive（正面）、negative（负面）、anxious（焦虑）、angry（愤怒）、confused（困惑）、neutral（中性）
-情绪分数范围：-1.0（极度负面）到 1.0（极度正面）
-
-输出严格的 JSON 格式（不要包含任何其他文本）：
-{{
-  "emotion_label": "positive|negative|anxious|angry|confused|neutral",
-  "emotion_score": 0.5,
-  "emotion_analysis": "情绪分析结果描述"
-}}
-
-注意：必须只返回 JSON 对象，不要包含任何其他文本。"""
 
 
 class EmotionStateAgent(BaseAgent):

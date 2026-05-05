@@ -15,25 +15,9 @@ from src.InputProcess.retrieval_strategies import (
     KNOWLEDGE_STRATEGY,
 )
 from src.utils.json_utils import extract_json_from_text
+from src.prompts import CLASSIFIER_SYSTEM_PROMPT
 
 logger = logging.getLogger(__name__)
-
-CLASSIFIER_SYSTEM_PROMPT = """你是一个场景分类器。根据用户输入，判断应该使用哪种记忆检索策略。
-
-可用的策略及适用场景：
-- standard: 标准对话场景。适用于日常问候、简单闲聊、确认信息等无需检索外部信息即可完成的标准对话。
-- task: 任务规划与信息查询场景。适用于需要搜索外部信息、查询实时数据（天气/交通/景点等）、制定计划、推荐建议（周末去哪玩/吃什么/看什么）等需要工具辅助完成的任务。
-- emotion: 情感陪伴场景。适用于用户表达情绪、寻求安慰、倾诉烦恼、分享喜悦等需要共情回应的场景。
-- knowledge: 知识问答场景。适用于询问概念、原理、定义、解释、学术问题等需要知识性回答的场景。
-
-判断规则：
-1. 如果用户询问需要"搜索/查询/推荐/规划"等外部信息，选择 task
-2. 如果用户只是简单问候或闲聊，选择 standard
-3. 如果用户表达情绪（正面或负面），选择 emotion
-4. 如果用户询问知识性问题（是什么/为什么/怎么做），选择 knowledge
-
-输出 JSON 格式：
-{"strategy": "standard|task|emotion|knowledge", "reason": "判断原因（简短说明）"}"""
 
 STRATEGY_MAP = {
     "standard": STANDARD_STRATEGY,

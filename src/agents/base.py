@@ -1,3 +1,10 @@
+"""
+Agent 基类模块
+
+定义工作流中所有 Agent 的抽象基类，
+提供统一的名称标识和 run 方法接口。
+"""
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod

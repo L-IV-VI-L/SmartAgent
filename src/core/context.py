@@ -1,3 +1,11 @@
+"""
+上下文容器模块
+
+提供 Context 类，作为工作流中各 Agent 之间传递数据的统一载体，
+包含用户信息、输入输出、人格配置、情绪状态、记忆数据和工具结果等。
+"""
+
+
 class Context:
     def __init__(self, user_id: str, session_id: str = None):
         self.user_id = user_id

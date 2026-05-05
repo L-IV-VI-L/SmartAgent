@@ -1,3 +1,9 @@
+"""
+记忆相关 Prompt 模板模块
+
+提供记忆压缩和长期记忆提取的系统提示词模板。
+"""
+
 from __future__ import annotations
 
 MEMORY_COMPRESS_PROMPT = """你是一个记忆压缩助手。将多轮对话压缩成简洁、结构化的摘要，保留后续追问必须依赖的主线信息。

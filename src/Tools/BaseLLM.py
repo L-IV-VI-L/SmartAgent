@@ -1,3 +1,10 @@
+"""
+基础 LLM 客户端模块
+
+提供 BaseLLMClient 类，封装大语言模型调用接口，
+支持系统提示词、多轮对话和 Token 计数功能。
+"""
+
 import os
 from typing import Optional
 

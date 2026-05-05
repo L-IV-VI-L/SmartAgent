@@ -1,6 +1,8 @@
 from .agent_prompts import TASK_CONTEXT_BUILD_PROMPT, TASK_JUDGE_PROMPT
 from .chat_prompts import CHAT_EMOTION_PROMPT
 from .memory_prompts import MEMORY_COMPRESS_PROMPT
+from .response_prompts import RESPONSE_SYSTEM_PROMPT
+from .scene_prompts import CLASSIFIER_SYSTEM_PROMPT, EMOTION_STATE_SYSTEM_PROMPT
 from .state_prompts import PERSONA_ADJUSTMENT_PROMPT
 from .tool_prompts import TOOL_DECISION_PROMPT
 
@@ -11,4 +13,7 @@ __all__ = [
     "MEMORY_COMPRESS_PROMPT",
     "PERSONA_ADJUSTMENT_PROMPT",
     "TOOL_DECISION_PROMPT",
+    "RESPONSE_SYSTEM_PROMPT",
+    "CLASSIFIER_SYSTEM_PROMPT",
+    "EMOTION_STATE_SYSTEM_PROMPT",
 ]

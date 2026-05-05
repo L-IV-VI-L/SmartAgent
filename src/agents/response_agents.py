@@ -1,6 +1,9 @@
 from __future__ import annotations
 
-"""回复生成 Agent。"""
+"""回复生成 Agent。
+
+
+"""
 
 from typing import Any, Callable, Dict, List, Optional
 import os
@@ -13,6 +16,7 @@ from ..InputProcess.memory_schema import LongMemoryRecord
 from ..Tools.BaseLLM import BaseLLMClient
 from ..utils.logger import get_logger
 from .base import BaseAgent
+from src.prompts import RESPONSE_SYSTEM_PROMPT
 
 logger = get_logger(__name__)
 
@@ -28,22 +32,6 @@ class ResponseAgent(BaseAgent):
 
     name = "response"
     uses_llm = True
-
-    RESPONSE_SYSTEM_PROMPT = """根据以下上下文信息，生成符合当前人格、语气和情绪的回复。
-
-回复要求：
-1. 结合用户情绪调整回复风格
-2. 体现当前人格特征
-3. 使用当前语气风格
-4. 如果工具结果存在，引用工具提供的信息
-5. 如果有相关记忆，适当提及以体现连贯性
-6. 回复要自然流畅，简洁明了，犹如平常聊天一般
-
-注意：
-- 你扮演的角色是用户的朋友
-- 不要直接重复上下文中的设定信息
-- 工具结果需要用自己的话总结，不要直接复制
-- 保持回复简洁明了"""
 
     DASHSCOPE_EMBEDDING_URL = "https://dashscope.aliyuncs.com/api/v1/services/embeddings/text-embedding/text-embedding"
     EMBEDDING_MODEL = "text-embedding-v3"
@@ -182,7 +170,7 @@ class ResponseAgent(BaseAgent):
         **kwargs: Any,
     ) -> str:
         """生成回复。"""
-        effective_system = system_prompt or self.RESPONSE_SYSTEM_PROMPT
+        effective_system = system_prompt or RESPONSE_SYSTEM_PROMPT
 
         response = self.llm_client.chat_with_prompt(
             prompt=context.text,
@@ -207,7 +195,7 @@ class ResponseAgent(BaseAgent):
 
         messages.append({"role": "user", "content": context.text})
 
-        effective_system = system_prompt or self.RESPONSE_SYSTEM_PROMPT
+        effective_system = system_prompt or RESPONSE_SYSTEM_PROMPT
 
         response = self.llm_client.chat(
             messages=messages,

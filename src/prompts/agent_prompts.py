@@ -1,3 +1,9 @@
+"""
+Agent 相关 Prompt 模板模块
+
+提供意图分析和查询扩写的系统提示词模板。
+"""
+
 from __future__ import annotations
 
 TASK_JUDGE_PROMPT = """你是一个意图分析助手。请分析用户输入，并回答两个问题：

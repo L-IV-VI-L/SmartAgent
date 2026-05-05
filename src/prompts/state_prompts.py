@@ -1,3 +1,9 @@
+"""
+状态相关 Prompt 模板模块
+
+提供人格和语气调整分析的系统提示词模板。
+"""
+
 from __future__ import annotations
 
 PERSONA_ADJUSTMENT_PROMPT = """你是一个情感与人格分析助手。根据用户当前情绪、对话历史和当前输入，分析助手应该如何调整自己的人格和语气来更好地回应用户。
