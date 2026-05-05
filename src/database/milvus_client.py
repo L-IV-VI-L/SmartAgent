@@ -20,20 +20,34 @@ try:
 except Exception:
     IndexParams = None
 
-from .db_config import MILVUS_CONFIG, MILVUS_COLLECTIONS, MILVUS_VECTOR_DIM, MILVUS_INDEX_PARAMS
+from .db_config import MILVUS_CONFIG, MILVUS_COLLECTIONS, MILVUS_VECTOR_DIM, MILVUS_INDEX_PARAMS, MILVUS_FIELDS, MILVUS_EMBEDDING
 from ..utils.logger import get_logger
 
 logger = get_logger(__name__)
 
-MILVUS_VECTOR_FIELD = "vector"
-MILVUS_LEGACY_VECTOR_FIELD = "embedding"
+
+def _build_field_schemas():
+    """从配置构建 Milvus FieldSchema 列表。"""
+    return [
+        FieldSchema(name="id", dtype=DataType.VARCHAR, is_primary=True, max_length=128),
+        FieldSchema(name="doc_id", dtype=DataType.VARCHAR, max_length=128, default_value=""),
+        FieldSchema(name="user_id", dtype=DataType.VARCHAR, max_length=256),
+        FieldSchema(name="text", dtype=DataType.VARCHAR, max_length=20000),
+        FieldSchema(name="content", dtype=DataType.VARCHAR, max_length=20000),
+        FieldSchema(name="vector", dtype=DataType.FLOAT_VECTOR, dim=MILVUS_VECTOR_DIM),
+        FieldSchema(name="weight", dtype=DataType.DOUBLE, default=0.0),
+        FieldSchema(name="create_time", dtype=DataType.DOUBLE),
+        FieldSchema(name="update_time", dtype=DataType.DOUBLE, default=0.0),
+        FieldSchema(name="active", dtype=DataType.BOOL, default=True),
+        FieldSchema(name="metadata", dtype=DataType.JSON),
+    ]
 
 
 class MilvusVectorStore:
     """Milvus 向量存储类，封装集合创建、写入和检索。"""
 
-    DASHSCOPE_EMBEDDING_URL = "https://dashscope.aliyuncs.com/api/v1/services/embeddings/text-embedding/text-embedding"
-    EMBEDDING_MODEL = "text-embedding-v3"
+    EMBEDDING_URL = MILVUS_EMBEDDING["url"]
+    EMBEDDING_MODEL = MILVUS_EMBEDDING["model"]
 
     def __init__(
         self,
@@ -56,19 +70,7 @@ class MilvusVectorStore:
             return
         try:
             if not self.client.has_collection(self.collection_name):
-                fields = [
-                    FieldSchema(name="id", dtype=DataType.VARCHAR, is_primary=True, max_length=128),
-                    FieldSchema(name="doc_id", dtype=DataType.VARCHAR, max_length=128),
-                    FieldSchema(name="user_id", dtype=DataType.VARCHAR, max_length=256),
-                    FieldSchema(name="text", dtype=DataType.VARCHAR, max_length=65535),
-                    FieldSchema(name="content", dtype=DataType.VARCHAR, max_length=65535),
-                    FieldSchema(name="vector", dtype=DataType.FLOAT_VECTOR, dim=self.dimension),
-                    FieldSchema(name="weight", dtype=DataType.DOUBLE, default=0.0),
-                    FieldSchema(name="create_time", dtype=DataType.DOUBLE),
-                    FieldSchema(name="update_time", dtype=DataType.DOUBLE, default=0.0),
-                    FieldSchema(name="active", dtype=DataType.BOOL, default=True),
-                    FieldSchema(name="metadata", dtype=DataType.JSON),
-                ]
+                fields = _build_field_schemas()
                 schema = CollectionSchema(fields, "Long term memory collection")
                 self.client.create_collection(collection_name=self.collection_name, schema=schema)
                 if IndexParams is not None:
@@ -76,9 +78,9 @@ class MilvusVectorStore:
                     index_params.add_index(
                         field_name="vector",
                         index_name="vector_idx",
-                        index_type=MILVUS_INDEX_PARAMS["index_type"],
+                        index_type="HNSW",
                         metric_type=MILVUS_INDEX_PARAMS["metric_type"],
-                        params={},
+                        params={"M": 16, "efConstruction": 256},
                     )
                     self.client.create_index(
                         collection_name=self.collection_name,
@@ -87,8 +89,8 @@ class MilvusVectorStore:
                 else:
                     index_params = {
                         "metric_type": MILVUS_INDEX_PARAMS["metric_type"],
-                        "index_type": MILVUS_INDEX_PARAMS["index_type"],
-                        "params": {},
+                        "index_type": "HNSW",
+                        "params": {"M": 16, "efConstruction": 256},
                     }
                     self.client.create_index(
                         collection_name=self.collection_name,
@@ -96,9 +98,13 @@ class MilvusVectorStore:
                         index_params=index_params,
                     )
                 logger.info("创建集合 %s 成功", self.collection_name)
+                self.client.load_collection(self.collection_name)
             else:
                 logger.info("集合 %s 已存在", self.collection_name)
-            self.client.load_collection(self.collection_name)
+                try:
+                    self.client.load_collection(self.collection_name)
+                except Exception:
+                    pass
             self._collection_created = True
         except Exception as e:
             logger.error("创建集合失败: %s", e)
@@ -127,7 +133,7 @@ class MilvusVectorStore:
         }
 
         try:
-            resp = requests.post(self.DASHSCOPE_EMBEDDING_URL, headers=headers, json=payload, timeout=30)
+            resp = requests.post(self.EMBEDDING_URL, headers=headers, json=payload, timeout=30)
             resp.raise_for_status()
             data = resp.json()
             embeddings = data.get("output", {}).get("embeddings", [])
@@ -246,7 +252,7 @@ class MilvusVectorStore:
     def _normalize_record(self, record: Dict[str, Any]) -> Dict[str, Any]:
         """将旧写入字段归一化为当前 Milvus schema。"""
         now = time.time()
-        vector = record.get(MILVUS_VECTOR_FIELD) or record.get(MILVUS_LEGACY_VECTOR_FIELD)
+        vector = record.get("vector") or record.get("embedding")
         text = record.get("text") or record.get("content") or ""
         metadata = record.get("metadata") or {}
         if not isinstance(metadata, dict):
@@ -280,19 +286,7 @@ class MilvusVectorStore:
             if self.client is None:
                 return
             if not self.client.has_collection(self.collection_name):
-                fields = [
-                    FieldSchema(name="id", dtype=DataType.VARCHAR, is_primary=True, max_length=128),
-                    FieldSchema(name="doc_id", dtype=DataType.VARCHAR, max_length=128),
-                    FieldSchema(name="user_id", dtype=DataType.VARCHAR, max_length=256),
-                    FieldSchema(name="text", dtype=DataType.VARCHAR, max_length=65535),
-                    FieldSchema(name="content", dtype=DataType.VARCHAR, max_length=65535),
-                    FieldSchema(name="vector", dtype=DataType.FLOAT_VECTOR, dim=self.dimension),
-                    FieldSchema(name="weight", dtype=DataType.DOUBLE, default=0.0),
-                    FieldSchema(name="create_time", dtype=DataType.DOUBLE),
-                    FieldSchema(name="update_time", dtype=DataType.DOUBLE, default=0.0),
-                    FieldSchema(name="active", dtype=DataType.BOOL, default=True),
-                    FieldSchema(name="metadata", dtype=DataType.JSON),
-                ]
+                fields = _build_field_schemas()
                 schema = CollectionSchema(fields, "Long term memory collection")
                 self.client.create_collection(collection_name=self.collection_name, schema=schema)
                 index_params = {
@@ -301,9 +295,14 @@ class MilvusVectorStore:
                     "params": {"M": 16, "efConstruction": 256} if index_type == "HNSW" else {},
                 }
                 self.client.create_index(collection_name=self.collection_name, field_name="vector", index_params=index_params)
+                self.client.load_collection(self.collection_name)
                 logger.info("创建集合 %s 成功，索引类型： %s", self.collection_name, index_type)
             else:
                 logger.info("集合 %s 已存在", self.collection_name)
+                try:
+                    self.client.load_collection(self.collection_name)
+                except Exception:
+                    pass
         except Exception as e:
             logger.error("创建索引失败: %s", e)
             raise
@@ -381,8 +380,18 @@ class MilvusClient:
         """更新指定记忆的字段（通过 upsert 实现）。"""
         if self.client is None:
             return
+        now = time.time()
         payload = dict(data)
         payload["id"] = memory_id
+        payload.setdefault("doc_id", memory_id)
+        payload.setdefault("user_id", "")
+        payload.setdefault("text", "")
+        payload.setdefault("content", "")
+        payload.setdefault("vector", [0.0] * MILVUS_VECTOR_DIM)
+        payload.setdefault("weight", 0.0)
+        payload.setdefault("create_time", now)
+        payload.setdefault("update_time", now)
+        payload.setdefault("active", True)
         try:
             self.client.upsert(
                 collection_name=self.collection_name,

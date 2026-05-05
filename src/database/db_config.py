@@ -116,9 +116,7 @@ REDIS_EXPIRE = {
     "short_memory": 86400 * 3,  # 短期记忆 3 天过期
 }
 
-# ----------------------
 # Milvus 集合
-# ----------------------
 MILVUS_COLLECTIONS = {
     "long_memory": "long_term_memory"
 }
@@ -126,23 +124,44 @@ MILVUS_COLLECTIONS = {
 # 向量维度（DashScope text-embedding-v3 模型输出维度）
 MILVUS_VECTOR_DIM = 1024
 
-# 长时记忆固定字段
+# Milvus 字段定义（DataType 需在运行时导入，这里用字典描述，由 milvus_client.py 转换）
+MILVUS_FIELDS = [
+    {"name": "id",           "type": "VARCHAR", "is_primary": True,  "max_length": 128},
+    {"name": "doc_id",       "type": "VARCHAR", "nullable": True,    "max_length": 128},
+    {"name": "user_id",      "type": "VARCHAR", "max_length": 256},
+    {"name": "text",         "type": "VARCHAR", "max_length": 65535},
+    {"name": "content",      "type": "VARCHAR", "max_length": 65535},
+    {"name": "vector",       "type": "FLOAT_VECTOR", "dim_key": "MILVUS_VECTOR_DIM"},
+    {"name": "weight",       "type": "DOUBLE",   "default": 0.0},
+    {"name": "create_time",  "type": "DOUBLE"},
+    {"name": "update_time",  "type": "DOUBLE",   "default": 0.0},
+    {"name": "active",       "type": "BOOL",     "default": True},
+    {"name": "metadata",     "type": "JSON"},
+]
+
+# 长时记忆固定字段（用于参考）
 MILVUS_LONG_MEMORY_SCHEMA = {
     "id": str,                          # 主键ID（字符串，避免不同 schema 冲突）
-    "doc_id": str,                     # 文档ID（兼容不同写入流程）
-    "user_id": str,                    # 用户ID
-    "text": str,                      # 记忆文本（兼容 LlamaIndex / 直接写入）
-    "content": str,                   # 记忆原文
-    "vector": list,                   # 向量
-    "weight": float,                   # 记忆权重 0~5
-    "create_time": float,              # 创建时间
-    "update_time": float,              # 最后强化时间
-    "active": bool,                    # 是否有效（低于阈值定期清除）
-    "metadata": dict                   # 扩展元数据
+    "doc_id": str,                      # 文档ID（兼容不同写入流程，可空）
+    "user_id": str,                     # 用户ID
+    "text": str,                        # 记忆文本（兼容 LlamaIndex / 直接写入）
+    "content": str,                     # 记忆原文
+    "vector": list,                     # 向量
+    "weight": float,                    # 记忆权重 0~5
+    "create_time": float,               # 创建时间
+    "update_time": float,               # 最后强化时间
+    "active": bool,                     # 是否有效（低于阈值定期清除）
+    "metadata": dict                    # 扩展元数据
 }
 
 # Milvus 索引
 MILVUS_INDEX_PARAMS = {
     "index_type": "AUTOINDEX",
     "metric_type": "COSINE"
+}
+
+# Embedding 模型配置
+MILVUS_EMBEDDING = {
+    "url": "https://dashscope.aliyuncs.com/api/v1/services/embeddings/text-embedding/text-embedding",
+    "model": "text-embedding-v3",
 }
