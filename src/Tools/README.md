@@ -26,7 +26,6 @@ src/Tools/
 | `DASHSCOPE_API_KEY` | 主 LLM API Key（通义千问） | BaseLLM, WebSearch |
 | `AMAP_MAPS_API_KEY` | 高德地图 API Key（Web服务类型） | AMapClient |
 
-**注意**: `AMAP_MAPS_API_KEY` 必须是 **Web 服务** 类型，不能使用 Web 端 (JS API) 类型。
 
 ---
 

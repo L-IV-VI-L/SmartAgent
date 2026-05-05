@@ -130,13 +130,13 @@ class WorkflowDependencies:
     def emotion_analyzer(self) -> EmotionAnalyzer:
         """延迟初始化 EmotionAnalyzer。"""
         if self._emotion_analyzer is None:
-            from src.prompts.chat_prompts import CHAT_EMOTION_PROMPT
+            from src.prompts.scene_prompts import EMOTION_STATE_SYSTEM_PROMPT
 
             self._emotion_analyzer = EmotionAnalyzer(
                 call_llm_json=lambda user_prompt, system_prompt: parse_json_response(
                     self.main_llm_client.chat_with_prompt(prompt=user_prompt, system_message=system_prompt)
                 ),
-                emotion_prompt=CHAT_EMOTION_PROMPT,
+                emotion_prompt=EMOTION_STATE_SYSTEM_PROMPT,
                 emotion_labels=EMOTION_LABELS,
             )
         return self._emotion_analyzer
