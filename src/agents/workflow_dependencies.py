@@ -20,7 +20,7 @@ from src.InputProcess.retrieval_strategies import RetrievalStrategy
 from src.database.repositories import ConversationRepository, MemoryRepository
 from src.prompts.agent_prompts import TASK_JUDGE_PROMPT, TASK_CONTEXT_BUILD_PROMPT
 from src.prompts.memory_prompts import MEMORY_COMPRESS_PROMPT
-from src.utils.json_utils import parse_json_response
+from src.utils.json_utils import parse_json_response    
 from src.utils.logger import get_logger
 
 logger = get_logger(__name__)
